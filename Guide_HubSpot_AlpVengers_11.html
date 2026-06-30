@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide HubSpot — Alpvengers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#374B60; --navy-d:#2B3B4D; --navy-soft:#4F6B86;
+    --orange:#F37021; --orange-l:#FF8A3D;
+    --bg:#F2F0E9; --card:#FFFFFF; --ink:#28323D; --muted:#706F69;
+    --border:#E7E3DA; --hover:#EDEBE3;
+    --grad-warm:linear-gradient(120deg,#FF8A3D 0%,#F37021 100%);
+    --grad-cool:linear-gradient(135deg,#4F6B86 0%,#2B3B4D 100%);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Inter',Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.62; font-size:15px; -webkit-font-smoothing:antialiased;}
+
+  /* ---- Scroll progress bar ---- */
+  .progress{position:fixed; top:0; left:0; height:3px; width:0; z-index:60; background:var(--grad-warm); transition:width .1s linear;}
+
+  /* ---- Ambient backdrop: soft mesh + drifting topo ---- */
+  .bg-mesh{position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(900px 520px at 88% -8%, rgba(243,112,33,.10), transparent 60%),
+      radial-gradient(820px 620px at -12% 8%, rgba(79,107,134,.10), transparent 55%),
+      radial-gradient(700px 700px at 50% 115%, rgba(243,112,33,.06), transparent 60%);}
+  .bg-topo{position:fixed; inset:-6% -4%; z-index:0; pointer-events:none; opacity:.5;
+    animation:drift 38s ease-in-out infinite alternate;}
+  .bg-topo svg{width:100%; height:100%;}
+  @keyframes drift{from{transform:translate3d(0,0,0) scale(1);} to{transform:translate3d(-22px,-16px,0) scale(1.04);}}
+
+  /* ---- Brand bar ---- */
+  .brandbar{display:flex; align-items:center; gap:12px; padding:13px 28px;
+    background:rgba(255,255,255,.8); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border); position:sticky; top:0; z-index:40;}
+  .brandbar .logo{display:flex; align-items:center; filter:drop-shadow(0 2px 6px rgba(243,112,33,.20));
+    transition:transform .5s cubic-bezier(.2,.9,.3,1);}
+  .brandbar .logo img{height:30px; width:auto; display:block;}
+  .brandbar:hover .logo{transform:translateY(-1px) scale(1.04);}
+  .brandbar .wordmark{font-family:'Permanent Marker',cursive; color:var(--orange); font-size:1.22rem; line-height:1;}
+  .brandbar .sep{width:1px; height:24px; background:var(--border); margin:0 5px;}
+  .brandbar .doc{font-weight:700; color:var(--navy); font-size:.97rem; font-family:'Space Grotesk',Inter,sans-serif;}
+  .brandbar .doc small{display:block; font-weight:500; color:var(--muted); font-size:.74rem; margin-top:1px; font-family:'Inter';}
+
+  /* ---- Shell ---- */
+  .shell{display:grid; grid-template-columns:264px 1fr; max-width:1180px; margin:0 auto; position:relative; z-index:1;}
+
+  /* ---- Sidebar ---- */
+  aside.nav{padding:26px 16px; position:sticky; top:55px; align-self:start; max-height:calc(100vh - 55px); overflow-y:auto;}
+  .nav-item{display:flex; align-items:center; gap:12px; width:100%; border:none; background:transparent; cursor:pointer;
+    font:inherit; text-align:left; padding:11px 13px; margin-bottom:3px; border-radius:12px; color:var(--navy); position:relative;
+    transition:background .2s, transform .2s;}
+  .nav-item:hover{background:var(--hover); transform:translateX(3px);}
+  .nav-item.active{background:var(--grad-cool); box-shadow:0 10px 24px -12px rgba(43,59,77,.65);}
+  .nav-item.active .nav-text{color:#fff; font-weight:700;}
+  .nav-item.active .nav-num{background:var(--grad-warm); color:#fff; border-color:transparent; box-shadow:0 2px 9px -2px rgba(243,112,33,.75);}
+  .nav-num{flex-shrink:0; width:26px; height:26px; border-radius:8px; border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; color:var(--navy-soft);
+    font-family:'Space Grotesk',Inter,sans-serif; transition:all .2s;}
+  .nav-num--dot{font-size:.7rem;}
+  .nav-text{font-size:.91rem; font-weight:600; font-family:'Space Grotesk',Inter,sans-serif;}
+
+  /* ---- Content ---- */
+  main{padding:40px 48px 110px; max-width:790px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* ---- Hero ---- */
+  .hero{margin:-8px 0 30px; padding:42px 38px 36px; border-radius:26px; position:relative; overflow:hidden;
+    background:var(--grad-cool); box-shadow:0 28px 56px -26px rgba(43,59,77,.6);
+    opacity:0; transform:translateY(16px); animation:heroIn .85s cubic-bezier(.2,.8,.25,1) forwards;}
+  .hero::after{content:""; position:absolute; inset:0; opacity:.5;
+    background-image:repeating-linear-gradient(115deg, transparent 0 26px, rgba(255,255,255,.045) 26px 27px);}
+  .hero-watermark{position:absolute; right:-26px; bottom:-58px; width:280px; opacity:.10; transform:rotate(-8deg);
+    animation:floaty 9s ease-in-out infinite alternate;}
+  .hero-watermark svg, .hero-watermark img{width:100%; height:auto; display:block;}
+  @keyframes floaty{from{transform:rotate(-8deg) translateY(0);} to{transform:rotate(-8deg) translateY(-12px);}}
+  .hero-kicker{position:relative; z-index:1; display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--orange-l); margin-bottom:11px; font-family:'Space Grotesk',Inter,sans-serif;}
+  .hero-title{position:relative; z-index:1; margin:0; font-family:'Space Grotesk',Inter,sans-serif;
+    font-size:2.7rem; font-weight:700; color:#fff; letter-spacing:-.02em; line-height:1.04;}
+  .hero-rule{position:relative; z-index:1; width:68px; height:4px; border-radius:3px; background:var(--grad-warm); margin-top:20px;}
+
+  /* ---- Panel head ---- */
+  .panel-head{margin-bottom:26px;}
+  .panel-kicker{display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--orange); margin-bottom:7px; font-family:'Space Grotesk',Inter,sans-serif;}
+  .panel-head h2{font-family:'Space Grotesk',Inter,sans-serif; font-size:2rem; font-weight:700; color:var(--navy);
+    margin:0; letter-spacing:-.015em; position:relative; padding-bottom:14px;}
+  .panel-head h2::after{content:""; position:absolute; left:0; bottom:0; width:50px; height:3px; border-radius:2px; background:var(--grad-warm);}
+
+  /* ---- Blocks ---- */
+  .block{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:24px 26px; margin-bottom:18px;
+    position:relative; overflow:hidden; transition:transform .32s cubic-bezier(.2,.8,.3,1), box-shadow .32s, border-color .32s;}
+  .block::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--grad-warm);
+    transform:scaleY(0); transform-origin:top; transition:transform .4s cubic-bezier(.2,.8,.3,1);}
+  .block:hover{transform:translateY(-4px); box-shadow:0 22px 46px -24px rgba(43,59,77,.4); border-color:#DAD5C8;}
+  .block:hover::before{transform:scaleY(1);}
+  .block-title{font-family:'Space Grotesk',Inter,sans-serif; font-size:1.1rem; font-weight:700; color:var(--navy);
+    margin:0 0 14px; padding-bottom:12px; position:relative; border-bottom:1px solid var(--border);}
+  .block-title::after{content:""; position:absolute; left:0; bottom:-1px; width:36px; height:2px; background:var(--orange);}
+  .block > *:last-child{margin-bottom:0;}
+
+  p{margin:0 0 12px; color:#3C4956; max-width:65ch;}
+  p.label{font-weight:700; color:var(--navy); margin:16px 0 7px; font-size:.9rem; font-family:'Space Grotesk',Inter,sans-serif;}
+  ul,ol{margin:0 0 13px; padding-left:4px; color:#3C4956; list-style:none;}
+  li{margin-bottom:9px; padding-left:26px; position:relative;}
+  ul>li::before{content:""; position:absolute; left:3px; top:.52em; width:8px; height:8px; border-radius:2px; background:var(--grad-warm); transform:rotate(45deg);}
+  ol{counter-reset:li;}
+  ol>li{counter-increment:li;}
+  ol>li::before{content:counter(li); position:absolute; left:0; top:.05em; width:19px; height:19px; border-radius:6px;
+    background:var(--navy); color:#fff; font-size:.66rem; font-weight:700; display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',Inter,sans-serif;}
+  .panel > p, .panel > ul, .panel > .label{max-width:65ch;}
+
+  /* ---- Table ---- */
+  .table-wrap{overflow-x:auto; margin:6px 0; border-radius:13px; border:1px solid var(--border);}
+  table{width:100%; border-collapse:collapse; font-size:.85rem; background:var(--card);}
+  th{background:var(--grad-cool); color:#fff; text-align:left; padding:10px 14px; font-weight:600; white-space:nowrap;
+    font-family:'Space Grotesk',Inter,sans-serif; font-size:.8rem; letter-spacing:.02em;}
+  td{padding:9px 14px; border-bottom:1px solid var(--border); color:#3C4956; vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .15s;}
+  tr:nth-child(even) td{background:#FAF9F6;}
+  tbody tr:hover td{background:#FFF3EC;}
+
+  /* ---- Note ---- */
+  .note{display:flex; gap:12px; align-items:flex-start; background:linear-gradient(100deg,#FFF6EF,#FFEEDF);
+    border:1px solid #F6D3BB; border-radius:13px; padding:13px 16px; margin:14px 0; font-size:.86rem; color:#7A4A28;
+    position:relative; overflow:hidden;}
+  .note::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--grad-warm);}
+  .note-ico{flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--grad-warm); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; font-style:italic; margin-top:1px;}
+
+  /* ---- Schema ---- */
+  .schema{margin:18px 0 6px; text-align:center; padding:20px; border-radius:16px; border:1px solid var(--border);
+    background:linear-gradient(160deg,#FCFBF8,#F6F4EE);}
+  .schema-svg{max-width:100%; height:auto;}
+  .schema figcaption{font-size:.78rem; color:var(--muted); margin-top:11px; font-style:italic;}
+  .sch-node{opacity:0; transform:translateY(8px) scale(.96); transform-box:fill-box; transform-origin:center;}
+  .sch-line{stroke-dasharray:200; stroke-dashoffset:200;}
+  .schema.in .sch-node{animation:nodeIn .55s cubic-bezier(.2,.8,.25,1) forwards; animation-delay:var(--d,0s);}
+  .schema.in .sch-line{animation:lineIn .6s ease forwards .3s;}
+  .sch-bar{transform-box:fill-box; transform-origin:bottom; opacity:0;}
+  .schema.in .sch-bar{animation:barIn .55s cubic-bezier(.2,.8,.25,1) forwards; animation-delay:var(--d,0s);}
+  @keyframes heroIn{to{opacity:1; transform:none;}}
+  @keyframes nodeIn{to{opacity:1; transform:none;}}
+  @keyframes lineIn{to{stroke-dashoffset:0;}}
+  @keyframes barIn{from{opacity:0; transform:scaleY(.12);} to{opacity:1; transform:scaleY(1);}}
+
+  /* ---- Reveal ---- */
+  .reveal{opacity:0; transform:translateY(15px); transition:opacity .6s ease, transform .6s cubic-bezier(.2,.8,.25,1);}
+  .reveal.in{opacity:1; transform:none;}
+
+  /* ---- Responsive ---- */
+  @media (max-width:840px){
+    .shell{grid-template-columns:1fr;}
+    aside.nav{position:sticky; top:54px; max-height:none; overflow:visible; border-bottom:1px solid var(--border);
+      padding:9px 10px; display:flex; gap:7px; overflow-x:auto; background:rgba(255,255,255,.9); backdrop-filter:blur(10px); z-index:39;}
+    .nav-item{flex-shrink:0; width:auto; margin:0; padding:8px 10px;}
+    .nav-item:hover{transform:none;}
+    .nav-text{display:none;}
+    main{padding:28px 20px 80px;}
+    .hero-title{font-size:2rem;}
+    .panel-head h2{font-size:1.55rem;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+    .reveal,.hero{opacity:1; transform:none;}
+    .sch-node,.sch-bar{opacity:1; transform:none;}
+    .sch-line{stroke-dashoffset:0;}
+    .bg-topo{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="bg-mesh" aria-hidden="true"></div>
+<div class="bg-topo" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#374B60" stroke-width="1">
+      <path d="M-60 230 Q 260 130 540 210 T 1100 190 T 1520 245"/>
+      <path d="M-60 290 Q 280 190 560 270 T 1120 250 T 1520 305"/>
+      <path d="M-60 350 Q 300 250 580 330 T 1140 310 T 1520 365"/>
+      <path d="M-60 410 Q 320 310 600 390 T 1160 370 T 1520 425"/>
+    </g>
+    <g fill="none" stroke="#F37021" stroke-width="1" opacity="0.6">
+      <path d="M-60 600 Q 320 520 620 580 T 1180 560 T 1540 610"/>
+      <path d="M-60 660 Q 340 580 640 640 T 1200 620 T 1540 670"/>
+      <path d="M-60 720 Q 360 640 660 700 T 1220 680 T 1540 730"/>
+    </g>
+  </svg>
+</div>
+
+<div class="brandbar">
+  <span class="logo"><img src="data:image/png;base64,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" alt="Alpvengers" /></span>
+  <span class="sep"></span>
+  <span class="doc">Guide HubSpot<small>Architecture, lecture et exploitation du CRM Alpvengers</small></span>
+</div>
+
+<div class="shell">
+  <aside class="nav"><button class="nav-item active" data-tab="accueil">
+  <span class="nav-num nav-num--dot">◆</span>
+  <span class="nav-text">Vue d'ensemble</span>
+</button><button class="nav-item" data-tab="premiers">
+  <span class="nav-num">1</span>
+  <span class="nav-text">Premiers pas</span>
+</button><button class="nav-item" data-tab="architecture">
+  <span class="nav-num">2</span>
+  <span class="nav-text">Architecture</span>
+</button><button class="nav-item" data-tab="pipeline">
+  <span class="nav-num">3</span>
+  <span class="nav-text">Pipeline</span>
+</button><button class="nav-item" data-tab="pilotage">
+  <span class="nav-num">4</span>
+  <span class="nav-text">Pilotage</span>
+</button><button class="nav-item" data-tab="exploitation">
+  <span class="nav-num">5</span>
+  <span class="nav-text">Exploitation</span>
+</button><button class="nav-item" data-tab="marketing">
+  <span class="nav-num">6</span>
+  <span class="nav-text">Marketing &amp; e-mailing</span>
+</button><button class="nav-item" data-tab="pratiques">
+  <span class="nav-num">7</span>
+  <span class="nav-text">Bonnes pratiques</span>
+</button><button class="nav-item" data-tab="lexique">
+  <span class="nav-num">8</span>
+  <span class="nav-text">Lexique</span>
+</button><button class="nav-item" data-tab="perspectives">
+  <span class="nav-num">9</span>
+  <span class="nav-text">Perspectives</span>
+</button></aside>
+  <main>
+  <section class="panel active" data-panel="accueil">
+    <header class="hero">
+         <div class="hero-watermark"><img src="data:image/png;base64,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" alt="" aria-hidden="true" /></div>
+         <span class="hero-kicker">CRM Commercial &amp; Marketing</span>
+         <h2 class="hero-title">Vue d'ensemble</h2>
+         <div class="hero-rule"></div>
+       </header>
+    <p class="reveal">Ce guide documente le CRM HubSpot d'Alpvengers : la façon dont il est structuré, la logique qui sous-tend chaque choix, et les gestes quotidiens pour l'exploiter sans l'abîmer. Il s'adresse à toute personne amenée à piloter la relation commerciale et marketing depuis l'outil, qu'elle découvre HubSpot ou qu'elle souhaite en comprendre l'architecture en place.</p>
+<p class="reveal">L'outil repose sur HubSpot Sales Hub Starter. Cette édition couvre l'essentiel des besoins d'une structure en croissance — pipeline commercial, propriétés personnalisées, emailing, segmentation — tout en posant certaines limites (workflows avancés, reporting fin, fusion automatique des doublons) qui relèvent des éditions Pro. Ces limites sont signalées au fil du document là où elles ont un impact concret.</p>
+<p class="label reveal">Les trois piliers de l'outil</p>
+<ul class="reveal"><li>Une base structurée autour de trois objets — Entreprises, Contacts, Transactions — qui reflètent fidèlement le modèle B2B2C d'Alpvengers.</li><li>Un double pipeline commercial qui sépare l'historique signé du cycle de vente en cours.</li><li>Une segmentation rigoureuse des contacts qui conditionne la fiabilité de toute action marketing.</li></ul>
+<p class="reveal">Les sections suivantes déroulent ces trois piliers, puis la manière de lire les données et de les enrichir au quotidien.</p>
+    
+  </section>
+
+  <section class="panel" data-panel="premiers">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 1</span>
+         <h2>Premiers pas</h2>
+       </header>
+    <p class="reveal">Cette partie s'adresse à qui ouvre HubSpot pour la première fois. Avant d'entrer dans l'architecture du CRM, elle pose les repères concrets : comment accéder au compte, à quoi ressemble l'écran, où se trouvent les données et comment lire une fiche. Une fois ces réflexes acquis, tout le reste du guide se suit naturellement.</p>
+
+    <div class="block reveal">
+      <h3 class="block-title">Accéder à HubSpot</h3>
+      <p class="reveal">HubSpot s'utilise depuis un navigateur web — rien à installer. On s'y connecte avec son adresse e-mail et son mot de passe ; si la double authentification est activée, un code à usage unique est demandé à chaque connexion.</p>
+<ul class="reveal"><li>Mieux vaut demander à l'administrateur (aujourd'hui Seb) une invitation à son propre nom plutôt que de partager un identifiant : chacun garde ainsi sa connexion et ses accès.</li><li>Si l'on dispose de plusieurs espaces HubSpot, vérifier en haut de l'écran que l'on est bien sur le compte d'Alpvengers avant toute manipulation.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Activer la double authentification dès la première connexion : un CRM renferme des données personnelles et mérite la même protection qu'une boîte mail (voir Partie 7).</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Se repérer dans l'interface</h3>
+      <p class="reveal">Tout part de la barre de navigation, en haut de l'écran. Elle donne accès aux grands espaces de l'outil ; au quotidien, seuls quelques-uns servent vraiment.</p>
+<div class="table-wrap reveal"><table><tr><th>Où</th><th>Ce qu'on y fait</th></tr><tr><td>CRM</td><td>Les données : Contacts, Entreprises, Transactions, Listes</td></tr><tr><td>Marketing</td><td>Les e-mails de masse et la lecture de leurs résultats</td></tr><tr><td>Rapports</td><td>Les tableaux de bord et les indicateurs</td></tr><tr><td>Recherche (loupe)</td><td>Sauter directement à une fiche par son nom</td></tr><tr><td>Paramètres (roue dentée)</td><td>Propriétés, utilisateurs, abonnements — la configuration</td></tr></table></div>
+<p class="reveal">À droite de cette barre se trouvent la recherche globale, les notifications et la roue dentée des Paramètres : ce sont les trois repères à mémoriser en premier.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Les trois objets : où les trouver</h3>
+      <p class="reveal">Les données d'Alpvengers s'organisent autour de trois objets, tous accessibles depuis le menu CRM : <strong>Contacts</strong> (les personnes), <strong>Entreprises</strong> (les diffuseurs) et <strong>Transactions</strong> (les ventes). Leur rôle et leur articulation sont détaillés en Partie 2 ; ici, l'essentiel est de savoir y accéder.</p>
+<p class="reveal">Chaque objet s'ouvre sur une liste. En haut de cette liste, trois éléments reviennent toujours : le bouton « Créer » (à droite) pour ajouter une fiche, le bouton « Importer » pour charger un fichier, et la barre de recherche et de filtres pour retrouver ou isoler des fiches.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Anatomie d'une fiche</h3>
+      <p class="reveal">Cliquer sur une ligne d'une liste ouvre une fiche — le cœur du CRM. Elle se lit en trois zones, toujours disposées de la même façon.</p>
+<ul class="reveal"><li><strong>À gauche</strong>, les propriétés : les informations structurées de la fiche (nom, e-mail, Type de contact, code postal…). Le lien « Afficher toutes les propriétés » déplie celles qui ne sont pas mises en avant.</li><li><strong>Au centre</strong>, le fil d'activité : l'historique des échanges — e-mails, notes, appels, tâches. C'est la mémoire de la relation.</li><li><strong>À droite</strong>, les associations : l'entreprise liée, les contacts rattachés, les transactions en cours. C'est ce qui relie les objets entre eux.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>En haut de la fiche, le menu « Actions » regroupe les opérations qui portent sur elle : fusionner, supprimer, et — point important — « Afficher les abonnements », par où passe la gestion manuelle de l'abonnement marketing (voir Partie 6).</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Travailler dans une vue en liste</h3>
+      <p class="reveal">Hors des fiches individuelles, l'essentiel du travail se fait depuis les vues en liste, qui affichent les fiches en tableau.</p>
+<ul class="reveal"><li>Trier en cliquant sur l'en-tête d'une colonne, chercher dans la barre dédiée, ou filtrer pour n'afficher qu'une cible précise — le geste est détaillé en Partie 4.</li><li>Enregistrer ses filtres en vue réutilisable, pour retrouver d'un clic « ses » fiches de travail.</li><li>Cocher plusieurs lignes fait apparaître une barre d'actions : modifier une propriété pour toutes les fiches sélectionnées d'un coup, par exemple.</li></ul>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Votre première session : cinq réflexes</h3>
+      <p class="reveal">De quoi prendre l'outil en main en quelques minutes, sans rien casser — naviguer et lire ne modifient aucune donnée.</p>
+<ol class="reveal"><li>Se connecter et vérifier que l'on est bien sur le compte d'Alpvengers.</li><li>Ouvrir CRM → Contacts et parcourir la liste.</li><li>Cliquer sur une fiche et repérer ses trois zones — propriétés, activité, associations.</li><li>Tester la recherche globale en tapant un nom connu.</li><li>Repérer la roue dentée des Paramètres, sans rien y changer pour l'instant.</li></ol>
+<div class="note reveal"><span class="note-ico">i</span><span>Inutile de tout retenir : ce guide reste la référence à rouvrir au besoin, et le Lexique, en fin de document, définit chaque terme employé.</span></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="architecture">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 2</span>
+         <h2>Architecture</h2>
+       </header>
+    
+    
+    <div class="block reveal">
+      <h3 class="block-title">Les trois objets et la logique B2B2C</h3>
+      <p class="reveal">HubSpot organise toutes les données autour d'« objets ». L'outil en mobilise trois, articulés pour épouser le modèle d'Alpvengers : un diffuseur (B2B) achète une expérience qu'il propose ensuite à ses propres usagers (C).</p>
+<figure class="schema reveal" data-schema="objects">
+  <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" class="schema-svg" role="img" aria-label="Les trois objets HubSpot et leurs associations">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9AA6B2"/></marker>
+      <linearGradient id="gOrange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A3D"/><stop offset="1" stop-color="#F37021"/></linearGradient>
+      <linearGradient id="gNavy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#42597172"/><stop offset="0" stop-color="#425971"/><stop offset="1" stop-color="#2E4051"/></linearGradient>
+    </defs>
+    <line class="sch-line" x1="190" y1="100" x2="250" y2="100" stroke="#9AA6B2" stroke-width="2" marker-end="url(#ar)"/>
+    <line class="sch-line" x1="450" y1="100" x2="390" y2="100" stroke="#9AA6B2" stroke-width="2" marker-end="url(#ar)"/>
+    <g class="sch-node" style="--d:0s"><rect x="30" y="55" width="160" height="90" rx="16" fill="url(#gNavy)"/>
+      <text x="110" y="92" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Inter,Arial">Entreprises</text>
+      <text x="110" y="116" text-anchor="middle" fill="#C7D0DA" font-size="12" font-family="Inter,Arial">les diffuseurs</text></g>
+    <g class="sch-node" style="--d:.12s"><rect x="250" y="55" width="140" height="90" rx="16" fill="#fff" stroke="#374B60" stroke-width="2"/>
+      <text x="320" y="92" text-anchor="middle" fill="#374B60" font-size="17" font-weight="700" font-family="Inter,Arial">Contacts</text>
+      <text x="320" y="116" text-anchor="middle" fill="#74726B" font-size="12" font-family="Inter,Arial">les personnes</text></g>
+    <g class="sch-node" style="--d:.24s"><rect x="450" y="55" width="160" height="90" rx="16" fill="url(#gOrange)"/>
+      <text x="530" y="92" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Inter,Arial">Transactions</text>
+      <text x="530" y="116" text-anchor="middle" fill="#FDE3D2" font-size="12" font-family="Inter,Arial">les ventes</text></g>
+  </svg><figcaption>Les trois objets et leurs associations</figcaption></figure>
+<div class="table-wrap reveal"><table><tr><th>Objet</th><th>Ce qu'il représente</th><th>Exemples</th></tr><tr><td>Entreprises</td><td>Les diffuseurs qui achètent une expérience</td><td>Offices de tourisme, intercommunalités (EPCI), entreprises privées, sponsors et marques</td></tr><tr><td>Contacts</td><td>Les personnes physiques — interlocuteurs B2B et utilisateurs finaux réunis dans un même objet</td><td>Un DGS de collectivité, un responsable RSE, un joueur de l'application</td></tr><tr><td>Transactions</td><td>Chaque expérience vendue à un diffuseur — un contrat, un montant, une étape</td><td>Une Biclou Cup signée avec un EPCI</td></tr></table></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Pourquoi réunir interlocuteurs B2B et utilisateurs finaux dans un seul objet Contacts : l'édition Starter ne permet pas de créer un objet personnalisé. La distinction se fait alors par une propriété dédiée, « Type de contact », plutôt que par une séparation physique des bases.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Les propriétés personnalisées</h3>
+      <p class="reveal">Au-delà des champs natifs (nom, e-mail, téléphone), chaque objet a été enrichi de propriétés sur-mesure qui traduisent le métier. Une règle structure l'ensemble : une propriété appartient à un seul objet, jamais à plusieurs.</p>
+<p class="label reveal">Propriétés Entreprises</p>
+<div class="table-wrap reveal"><table><tr><th>Propriété</th><th>Type</th><th>Valeurs</th></tr><tr><td>Type de diffuseurs</td><td>Liste déroulante</td><td>OT / EPCI / ENTI / Sponsor-Marque</td></tr><tr><td>Statut client</td><td>Liste déroulante</td><td>Happy / Non happy</td></tr><tr><td>Statut public / privé</td><td>Liste déroulante</td><td>Public / Privé</td></tr><tr><td>Secteur d'activité</td><td>Liste déroulante</td><td>Tourisme / Collectivité / Industrie / Services</td></tr></table></div>
+<p class="label reveal">Propriétés Contacts</p>
+<div class="table-wrap reveal"><table><tr><th>Propriété</th><th>Type</th><th>Valeurs</th></tr><tr><td>Type de contact</td><td>Liste déroulante</td><td>ENTI / OT / EPCI / MOBI / Utilisateur app</td></tr><tr><td>Statut email</td><td>Liste déroulante</td><td>Valide / Rejeté / À vérifier</td></tr></table></div>
+<p class="label reveal">Propriétés Transactions</p>
+<div class="table-wrap reveal"><table><tr><th>Propriété</th><th>Type</th><th>Valeurs</th></tr><tr><td>Pipeline</td><td>Natif</td><td>Pipeline 2025 / Pipeline 2026</td></tr><tr><td>Étape</td><td>Natif</td><td>Selon le pipeline</td></tr><tr><td>Montant</td><td>Natif</td><td>En euros</td></tr><tr><td>Type de championnat</td><td>Liste déroulante</td><td>Biclou Cup / Quizzathlon / Panoramic Challenge</td></tr></table></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Répartition des propriétés : le mapping Contacts / Entreprises</h3>
+      <p class="reveal">Avant de créer une propriété ou de préparer un import, une seule question tranche son rattachement : décrit-on l'entreprise, ou la personne ? Deux propriétés peuvent porter un nom voisin et désigner des réalités liées tout en vivant sur deux objets distincts.</p>
+<p class="label reveal">Le cas « Type de diffuseurs » vs « Type de contact »</p>
+<p class="reveal">« Type de diffuseurs » qualifie l'ENTREPRISE — la nature du diffuseur (un OT n'est pas un EPCI). « Type de contact » qualifie la PERSONNE. Sur une même ligne, les deux valeurs coïncident le plus souvent (un contact rattaché à un EPCI est lui-même tagué EPCI), mais ce sont deux champs indépendants, sur deux objets, qui ne se synchronisent jamais automatiquement.</p>
+<p class="reveal">À l'import, HubSpot matérialise cette frontière par deux sous-onglets distincts — « Propriétés du contact » et « Propriétés de l'entreprise » — entre lesquels chaque colonne du fichier doit être correctement répartie. Une colonne mal aiguillée crée une propriété fantôme au lieu d'alimenter la bonne fiche.</p>
+<div class="note reveal"><span class="note-ico">i</span><span>Les deux taxonomies doivent rester alignées, mais cet alignement n'est jamais vérifié par HubSpot. Un audit ponctuel — repérer les contacts dont le « Type de contact » diverge du « Type de diffuseurs » de leur entreprise — prévient les incohérences avant qu'elles ne faussent une campagne.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">La segmentation des contacts</h3>
+      <p class="reveal">La base réunit plusieurs milliers de contacts, dont une majorité d'utilisateurs finaux de l'application et une part d'interlocuteurs B2B. Sans distinction nette, le risque est immédiat : adresser une sollicitation commerciale à un joueur, ou une communication grand public à un décideur institutionnel.</p>
+<p class="reveal">La propriété « Type de contact » répond à ce risque. Appliquée à l'ensemble de la base, elle constitue le filtre de premier réflexe : aucune liste ni campagne ne se construit sans s'appuyer d'abord sur elle.</p>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="pipeline">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 3</span>
+         <h2>Pipeline</h2>
+       </header>
+    
+    
+    <div class="block reveal">
+      <h3 class="block-title">Pourquoi deux pipelines</h3>
+      <p class="reveal">Une transaction ne porte qu'un seul statut à un instant donné. Or un client signé sur un exercice peut redevenir un prospect actif sur l'exercice suivant — deux réalités commerciales simultanées qu'un statut unique ne peut pas représenter. La réponse n'est pas une propriété « Année » sur une transaction unique, mais bien deux transactions distinctes, donc deux pipelines.</p>
+<div class="table-wrap reveal"><table><tr><th>Pipeline</th><th>Rôle</th><th>État</th></tr><tr><td>Pipeline 2025</td><td>Référence historique du chiffre d'affaires signé</td><td>Figé — clients positionnés en « Fermé gagné »</td></tr><tr><td>Pipeline 2026</td><td>Cycle de vente actif</td><td>Vivant — alimenté en continu</td></tr></table></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Les étapes du pipeline actif</h3>
+      <p class="reveal">Chaque étape porte une probabilité de conversion. Cette probabilité n'est pas cosmétique : elle alimente le calcul du chiffre d'affaires pondéré (voir la section Pilotage).</p>
+<figure class="schema reveal" data-schema="pipeline">
+  <svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" class="schema-svg" role="img" aria-label="Les huit étapes du pipeline et leur probabilité croissante">
+    <defs><linearGradient id="gBar" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2E4051"/><stop offset="1" stop-color="#4F6B86"/></linearGradient></defs>
+    <g class="sch-bar" style="--d:0.00s">
+        <rect x="20" y="172" width="76" height="28" rx="7" fill="url(#gBar)"/>
+        <text x="58" y="164" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">10%</text>
+        <text x="58" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">Prospect</text></g><g class="sch-bar" style="--d:0.07s">
+        <rect x="110" y="148" width="76" height="52" rx="7" fill="url(#gBar)"/>
+        <text x="148" y="140" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">20%</text>
+        <text x="148" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">Contacté</text></g><g class="sch-bar" style="--d:0.14s">
+        <rect x="200" y="124" width="76" height="76" rx="7" fill="url(#gBar)"/>
+        <text x="238" y="116" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">40%</text>
+        <text x="238" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">RDV planifié</text></g><g class="sch-bar" style="--d:0.21s">
+        <rect x="290" y="100" width="76" height="100" rx="7" fill="url(#gBar)"/>
+        <text x="328" y="92" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">60%</text>
+        <text x="328" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">En discussion</text></g><g class="sch-bar" style="--d:0.28s">
+        <rect x="380" y="76" width="76" height="124" rx="7" fill="url(#gBar)"/>
+        <text x="418" y="68" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">70%</text>
+        <text x="418" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">Devis envoyé</text></g><g class="sch-bar" style="--d:0.35s">
+        <rect x="470" y="52" width="76" height="148" rx="7" fill="url(#gBar)"/>
+        <text x="508" y="44" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">80%</text>
+        <text x="508" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">Négociation</text></g><g class="sch-bar" style="--d:0.42s">
+        <rect x="560" y="28" width="76" height="172" rx="7" fill="#F37021"/>
+        <text x="598" y="20" text-anchor="middle" fill="#374B60" font-size="12" font-weight="700" font-family="Inter,Arial">100%</text>
+        <text x="598" y="216" text-anchor="middle" fill="#74726B" font-size="9.5" font-family="Inter,Arial">Signé</text></g>
+  </svg><figcaption>Les huit étapes et leur probabilité</figcaption></figure>
+<div class="table-wrap reveal"><table><tr><th>Étape</th><th>Probabilité</th><th>Signification</th></tr><tr><td>Prospect</td><td>10 %</td><td>Cible identifiée, pas encore contactée</td></tr><tr><td>Contacté</td><td>20 %</td><td>Premier contact établi</td></tr><tr><td>RDV planifié</td><td>40 %</td><td>Rendez-vous fixé</td></tr><tr><td>En discussion</td><td>60 %</td><td>Besoin qualifié, échanges actifs</td></tr><tr><td>Devis envoyé</td><td>70 %</td><td>Proposition commerciale transmise</td></tr><tr><td>Négociation</td><td>80 %</td><td>Discussion sur les termes</td></tr><tr><td>Signé / Lancement</td><td>100 %</td><td>Contrat conclu</td></tr><tr><td>Fermé perdu</td><td>0 %</td><td>Abandon — motif de perte à renseigner systématiquement</td></tr></table></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Le lien entre une Entreprise et le pipeline</h3>
+      <p class="reveal">C'est le point le plus structurant — et la principale source de confusion. Une entreprise n'est jamais « dans » un pipeline. Le pipeline et l'étape sont des attributs de la transaction, pas de l'entreprise. Une entreprise n'apparaît dans un pipeline que par l'intermédiaire d'une transaction qui lui est associée.</p>
+<figure class="schema reveal" data-schema="link">
+  <svg viewBox="0 0 620 240" xmlns="http://www.w3.org/2000/svg" class="schema-svg" role="img" aria-label="Une entreprise peut porter plusieurs transactions dans plusieurs pipelines">
+    <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9AA6B2"/></marker></defs>
+    <g class="sch-node" style="--d:0s"><rect x="30" y="95" width="150" height="56" rx="14" fill="#374B60"/>
+      <text x="105" y="120" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,Arial">Entreprise</text>
+      <text x="105" y="138" text-anchor="middle" fill="#C7D0DA" font-size="11" font-family="Inter,Arial">un compte</text></g>
+    <line class="sch-line" x1="180" y1="123" x2="330" y2="60" stroke="#9AA6B2" stroke-width="2" marker-end="url(#ar2)"/>
+    <line class="sch-line" x1="180" y1="123" x2="330" y2="180" stroke="#9AA6B2" stroke-width="2" marker-end="url(#ar2)"/>
+    <g class="sch-node" style="--d:.15s"><rect x="330" y="35" width="240" height="56" rx="14" fill="#fff" stroke="#9AA6B2" stroke-width="1.5"/>
+      <text x="350" y="60" fill="#374B60" font-size="13" font-weight="700" font-family="Inter,Arial">Transaction 2025</text>
+      <text x="350" y="78" fill="#74726B" font-size="11" font-family="Inter,Arial">Fermé perdu · pipeline 2025</text></g>
+    <g class="sch-node" style="--d:.28s"><rect x="330" y="150" width="240" height="56" rx="14" fill="#FFF3EC" stroke="#F37021" stroke-width="1.5"/>
+      <text x="350" y="175" fill="#374B60" font-size="13" font-weight="700" font-family="Inter,Arial">Transaction 2026</text>
+      <text x="350" y="193" fill="#B05A1F" font-size="11" font-family="Inter,Arial">En discussion · pipeline 2026</text></g>
+  </svg><figcaption>Une entreprise, plusieurs transactions, plusieurs pipelines</figcaption></figure>
+<ul class="reveal"><li>Une fiche Entreprise seule est une fiche d'identité : nom, adresse, secteur — sans statut commercial.</li><li>Associée à une transaction, elle acquiert un statut commercial, celui de l'étape de cette transaction.</li><li>Une même entreprise peut porter plusieurs transactions en parallèle : une par expérience vendue, une par exercice, une par relance après un échec.</li></ul>
+<p class="reveal">Illustration : un compte peut présenter une transaction en « Fermé perdu » sur un exercice (budget jugé trop élevé) puis une nouvelle transaction l'exercice suivant, rouverte sur une approche révisée. Même entreprise, deux transactions, deux historiques — l'échec passé reste consultable et documenté plutôt qu'écrasé.</p>
+<div class="note reveal"><span class="note-ico">i</span><span>L'association entreprise ↔ transaction se renseigne dès la création de la transaction. Omise, elle produit une transaction « orpheline » : présente dans le pipeline, mais rattachée à aucune fiche entreprise, donc difficile à retrouver. Le panneau « Transactions » d'une fiche Entreprise liste l'ensemble de ses transactions, tous pipelines confondus — le réflexe à avoir avant toute relance.</span></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="pilotage">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 4</span>
+         <h2>Pilotage</h2>
+       </header>
+    
+    
+    <div class="block reveal">
+      <h3 class="block-title">Naviguer dans les transactions</h3>
+      <p class="reveal">Depuis CRM → Transactions, deux vues coexistent : le tableau, pour les tris et filtres fins, et le Kanban, pour la lecture visuelle du pipeline. En Kanban, chaque colonne est une étape, chaque carte une transaction, et le total de chaque colonne s'affiche en tête — un aperçu immédiat du poids de chaque étape.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Filtrer une vue pour isoler une cible</h3>
+      <p class="reveal">Filtrer ne supprime rien et ne modifie aucune donnée : l'opération restreint temporairement l'affichage au sous-ensemble qui répond à un ou plusieurs critères. C'est le geste de base pour travailler sur une cible précise — tous les OT, tous les EPCI d'un département, tous les contacts d'un type donné — sans quitter la liste.</p>
+<p class="label reveal">Exemple : n'afficher que les OT dans les Entreprises</p>
+<ol class="reveal"><li>Ouvrir CRM → Entreprises (ou CRM → Contacts selon l'objet visé).</li><li>Cliquer sur « Filtres avancés » (ou « + Ajouter un filtre » selon l'affichage).</li><li>Choisir la propriété sur laquelle filtrer — ici « Type de diffuseurs ».</li><li>Sélectionner la condition « est l'un de », puis la valeur OT.</li><li>Appliquer : la liste n'affiche plus que les entreprises de type OT.</li></ol>
+<p class="reveal">Pour affiner, on empile les critères : ajouter un second filtre (par exemple « Code postal commence par 74 ») restreint encore l'affichage, les conditions se combinant en « et ». On retrouve ici la logique des propriétés de segmentation — « Type de diffuseurs » côté entreprise, « Type de contact » côté personne.</p>
+<div class="note reveal"><span class="note-ico">i</span><span>Un filtre est temporaire et propre à l'écran : il disparaît une fois la page quittée. Pour réutiliser régulièrement la même cible — relances, campagnes — mieux vaut l'enregistrer en liste active plutôt que de refaire le filtre à chaque fois (voir « Le segment » en Marketing &amp; e-mailing).</span></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Quand le critère porte sur l'adresse ou le code postal, filtrer sur la propriété de l'Entreprise est plus fiable que sur celle du Contact : l'adresse est le plus souvent renseignée au niveau de l'entreprise. Un même filtre code postal posé sur les Contacts peut ainsi renvoyer beaucoup moins de fiches qu'attendu.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Chiffre d'affaires signé et chiffre d'affaires pondéré</h3>
+      <p class="reveal">Deux indicateurs à ne jamais confondre, car ils ne répondent pas à la même question.</p>
+<div class="table-wrap reveal"><table><tr><th>Indicateur</th><th>Calcul</th><th>À quoi il sert</th></tr><tr><td>CA signé</td><td>Somme des transactions à 100 %</td><td>Mesurer l'acquis</td></tr><tr><td>CA pondéré</td><td>Somme des transactions actives × leur probabilité d'étape</td><td>Anticiper la trésorerie en intégrant l'incertitude</td></tr></table></div>
+<p class="reveal">Le CA pondéré est l'indicateur de pilotage prévisionnel : une transaction à 80 % pèse davantage qu'une transaction à 20 %, ce qui donne une projection réaliste plutôt qu'une addition brute d'opportunités hétérogènes.</p>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="exploitation">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 5</span>
+         <h2>Exploitation</h2>
+       </header>
+    
+    
+    <div class="block reveal">
+      <h3 class="block-title">Créer une fiche à la main</h3>
+      <p class="reveal">Avant l'import en masse, le geste le plus simple : créer une fiche unique. Le bouton « Créer » se trouve en haut à droite de chaque liste d'objets.</p>
+<p class="label reveal">Un contact</p>
+<p class="reveal">CRM → Contacts → « Créer un contact ». Renseigner l'e-mail (qui sert d'identifiant unique), le prénom, le nom et le « Type de contact », puis associer la personne à son entreprise dans le panneau de droite.</p>
+<p class="label reveal">Une entreprise</p>
+<p class="reveal">CRM → Entreprises → « Créer une entreprise ». Renseigner le nom (identifiant de la fiche), le « Type de diffuseurs » et le code postal ; les contacts viennent ensuite s'y rattacher.</p>
+<p class="label reveal">Une transaction</p>
+<p class="reveal">Le geste est détaillé juste après, dans « Créer et faire avancer une transaction » : une transaction se crée toujours rattachée à une entreprise.</p>
+<div class="note reveal"><span class="note-ico">i</span><span>Deux réflexes dès la création : renseigner l'association (contact ↔ entreprise) pour éviter les fiches orphelines, et poser d'emblée le bon « Type de contact » ou « Type de diffuseurs » — sans quoi la fiche échappera aux segmentations (voir Partie 6).</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Importer un fichier</h3>
+      <p class="reveal">L'import est l'opération la plus sensible : une erreur de préparation s'y traduit en doublons ou en fiches orphelines difficiles à rattraper. Cinq règles l'encadrent.</p>
+<ul class="reveal"><li>En-têtes de colonnes en première ligne, sans bannière ni ligne vide au-dessus.</li><li>Colonne « Entreprise » renseignée sur chaque ligne, jamais de cellule fusionnée ou vide — sous peine d'entreprises dupliquées ou orphelines.</li><li>Import « Contacts et Entreprises » simultané, pour que l'association se crée automatiquement.</li><li>Colonne « Abonnement marketing » à « Abonné » pour autoriser les campagnes ultérieures — non rattrapable en masse après coup sur Starter.</li><li>Montants en nombres entiers, sans symbole ni mise en forme monétaire.</li></ul>
+<p class="reveal">Le mapping se joue ensuite colonne par colonne, en veillant au bon sous-onglet (contact ou entreprise) pour chaque propriété — point détaillé dans la section Architecture.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Importer une base EPCI ou OT, pas à pas</h3>
+      <p class="reveal">La préparation du fichier suit les cinq règles ci-dessus. Vient ensuite la séquence dans l'assistant d'import — identique pour les EPCI et les OT : seules changent les valeurs de typage et la source des contacts.</p>
+<p class="label reveal">La séquence dans HubSpot</p>
+<ol class="reveal"><li>CRM → Contacts, puis le bouton « Importer » en haut à droite → « Démarrer un import ».</li><li>« Fichier depuis l'ordinateur » → « Un fichier ».</li><li>« Plusieurs objets » → cocher Contacts <em>et</em> Entreprises : c'est cette étape qui crée l'association entre la personne et sa structure. Sans elle, les contacts arrivent détachés de leur entreprise.</li><li>Glisser le fichier .xlsx et lancer l'analyse des colonnes.</li><li>Mapping : aiguiller chaque colonne vers le bon objet via les sous-onglets « Propriétés du contact » et « Propriétés de l'entreprise ». Points de vigilance — « Type de diffuseurs » sur l'Entreprise, « Type de contact » sur le Contact ; l'« E-mail » sert d'identifiant unique du contact, le « Nom de l'entreprise » d'identifiant de l'entreprise.</li><li>Écran de consentement : s'appuyer sur la colonne « Abonnement marketing » pour passer les contacts en « Abonné » (statut non rattrapable en masse ensuite sur Starter).</li><li>Terminer l'import, puis contrôler le récapitulatif : nombre de contacts et d'entreprises créés, et surtout zéro ligne en erreur.</li></ol>
+<div class="note reveal"><span class="note-ico">i</span><span>L'étape 3 est la plus sensible : un import « Contacts » seul crée les personnes sans les rattacher à leur structure, et il faut alors refaire l'association à la main, fiche par fiche.</span></div>
+<p class="label reveal">Spécificités EPCI</p>
+<ul class="reveal"><li>Typage : « Type de diffuseurs » = EPCI sur l'Entreprise, « Type de contact » = EPCI sur le Contact.</li><li>Toujours partir du fichier maître existant avant toute recherche neuve : on fusionne l'existant, on ne réimporte pas par-dessus — sous peine de doublons.</li><li>Au moins une adresse e-mail générique par EPCI, même quand le président n'est pas identifié ; vérifier les résultats des dernières élections intercommunales avant d'attribuer un rôle de direction.</li></ul>
+<p class="label reveal">Spécificités OT — le prochain chantier</p>
+<ul class="reveal"><li>Typage : « Type de diffuseurs » = OT sur l'Entreprise, « Type de contact » = OT sur le Contact.</li><li>Sourcing des contacts : sites officiels des offices de tourisme (rubrique « contact » ou « équipe »), annuaire ADN Tourisme ; à défaut de nominatif, l'adresse générique de la structure (contact@…, accueil@…), jamais une adresse reconstituée.</li><li>Après l'import, contrôler le volume obtenu par un filtre « Type de diffuseurs = OT » dans la vue Entreprises (voir « Filtrer une vue pour isoler une cible », en Pilotage).</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Pour le filtrage géographique ultérieur (un département, une zone), le code postal doit être renseigné au niveau de l'Entreprise : c'est là qu'un filtre par code postal renvoie de façon fiable l'ensemble des contacts rattachés.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Importer un gros fichier dans le pipeline (transactions)</h3>
+      <p class="reveal">Alimenter le pipeline en masse, c'est importer des <strong>transactions</strong> — et non plus seulement des contacts et des entreprises. Une transaction correspond à une ligne du pipeline. Pour reprendre un portefeuille existant ou charger un volume important d'opportunités d'un coup, on les importe en bloc plutôt que de les créer une par une. La logique de la Partie 3 reste la règle : une transaction ne vit dans le pipeline que si elle est associée à son entreprise.</p>
+<p class="label reveal">Préparer le fichier transactions</p>
+<p class="reveal">Au-delà des règles générales d'import, le fichier transactions repose sur quelques colonnes dont les valeurs doivent correspondre <strong>exactement</strong> à ce qui existe dans HubSpot.</p>
+<div class="table-wrap reveal"><table><tr><th>Colonne</th><th>Rôle</th><th>Exigence</th></tr><tr><td>Nom de la transaction</td><td>Identifie chaque ligne du pipeline</td><td>Obligatoire — ex. « Biclou Cup 2026 — CC du Pays Rochois »</td></tr><tr><td>Nom de l'entreprise</td><td>Clé d'association : rattache la transaction à son compte</td><td>Doit reprendre à l'identique le nom de l'entreprise</td></tr><tr><td>Pipeline</td><td>Le pipeline cible</td><td>Valeur exacte : « Pipeline 2026 »</td></tr><tr><td>Étape de transaction</td><td>La position dans le pipeline</td><td>Libellé exact d'une étape existante (« En discussion », « Devis envoyé »…)</td></tr><tr><td>Montant</td><td>Le chiffre d'affaires porté</td><td>Nombre entier, sans symbole € ni espace</td></tr><tr><td>Type de championnat</td><td>Le format vendu</td><td>Valeur de la liste (Biclou Cup, Quizzathlon…)</td></tr></table></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Les libellés « Pipeline » et « Étape de transaction » doivent correspondre au caractère près à ceux configurés dans HubSpot. Une faute de frappe ou une étape inexistante met la ligne en erreur : HubSpot ne devine pas l'étape, il la rejette.</span></div>
+<p class="label reveal">La séquence d'import</p>
+<ol class="reveal"><li>CRM → Transactions, puis le bouton « Importer » en haut à droite → « Démarrer un import ».</li><li>« Fichier depuis l'ordinateur » → « Un fichier ».</li><li>« Plusieurs objets » → cocher Transactions <em>et</em> Entreprises (ajouter Contacts si le fichier porte aussi les interlocuteurs). C'est ce qui rattache chaque transaction à son compte.</li><li>Glisser le fichier, puis désigner la colonne-clé d'association : « Nom de l'entreprise » relie chaque transaction à son entreprise.</li><li>Mapping : « Pipeline » → propriété Pipeline ; « Étape de transaction » → propriété Étape ; « Nom de la transaction », « Montant » et « Type de championnat » sur l'objet Transaction.</li><li>Si l'assistant demande le pipeline cible, sélectionner « Pipeline 2026 » ; sinon il lit directement la colonne Pipeline du fichier.</li><li>Terminer l'import, puis contrôler en vue Kanban (CRM → Transactions → Kanban) : chaque colonne d'étape doit afficher le bon nombre de transactions et le bon total.</li></ol>
+<p class="label reveal">Pour un gros volume sur l'édition Starter</p>
+<ul class="reveal"><li>Tester d'abord sur un échantillon de dix à quinze lignes : on valide le mapping et les libellés d'étapes avant de lancer le fichier complet. Une erreur de libellé répétée sur des milliers de lignes est longue à corriger après coup.</li><li>Dédoublonner le fichier en amont, sur le couple « Nom de l'entreprise » + « Nom de la transaction » : Starter ne fusionne pas les doublons en masse.</li><li>En cas de réimport, conserver une colonne identifiant stable (le « Record ID » une fois les transactions créées) pour <em>mettre à jour</em> les lignes existantes au lieu d'en recréer. Sans clé stable, chaque réimport duplique le pipeline.</li><li>Format .xlsx ou .csv encodé en UTF-8 ; montants en nombres bruts, dates au format reconnu par HubSpot.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Une transaction importée sans entreprise associée devient orpheline : présente dans le pipeline mais rattachée à aucun compte, donc introuvable depuis une fiche. Vérifier l'association juste après l'import — c'est le premier contrôle à faire sur un gros chargement.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Créer et faire avancer une transaction</h3>
+      <p class="reveal">Depuis CRM → Transactions → Créer, les champs essentiels sont le nom, le pipeline (2026 par défaut), l'étape, le montant, le type de championnat et — déterminant — l'entreprise associée. En vue Kanban, le glisser-déposer d'une carte d'une colonne à l'autre met la probabilité à jour automatiquement. Tout passage en « Fermé perdu » s'accompagne d'un motif de perte, donnée précieuse pour l'analyse et les relances futures.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Ajouter une option à une liste déroulante</h3>
+      <p class="reveal">Le catalogue évolue : nouveaux formats d'expériences, nouveaux types de diffuseurs. Pour ajouter une valeur à un menu — par exemple un nouveau « Type de championnat » : Paramètres → Propriétés → objet concerné → ouvrir la propriété → Ajouter une option → enregistrer. La nouvelle valeur se propage immédiatement partout où la propriété est utilisée. Le principe vaut pour toute propriété de type liste déroulante.</p>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Créer une propriété</h3>
+      <p class="reveal">Quand un besoin d'information récurrent n'a pas de champ dédié, on crée une propriété plutôt que de détourner un champ existant. Le parcours : Paramètres → Propriétés → choisir l'objet (Contact, Entreprise ou Transaction) → Créer une propriété. On définit alors un libellé clair, un groupe de rattachement et surtout un type de champ adapté.</p>
+<div class="table-wrap reveal"><table><tr><th>Type de champ</th><th>Quand l'utiliser</th></tr><tr><td>Liste déroulante</td><td>Valeurs fermées et connues d'avance (un statut, une catégorie)</td></tr><tr><td>Texte sur une ligne</td><td>Information libre et courte (un identifiant, une référence)</td></tr><tr><td>Nombre</td><td>Donnée chiffrée exploitable en calcul ou en filtre (un effectif, un montant)</td></tr><tr><td>Case à cocher / Sélection unique</td><td>Choix binaire ou exclusif (oui-non, public-privé)</td></tr><tr><td>Date</td><td>Échéance ou jalon (date de lancement, fin de contrat)</td></tr></table></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Le choix du type est structurant et difficile à modifier une fois la propriété remplie. Mieux vaut trancher en amont : une donnée qu'on voudra filtrer ou additionner doit être un nombre ou une liste, jamais du texte libre.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Enrichir la base de prospection</h3>
+      <p class="reveal">La base vit par son alimentation continue : nouveaux EPCI au fil des recompositions territoriales, offices de tourisme, entreprises privées. La méthode reste constante quel que soit le segment — préparer un fichier propre au format d'import, vérifier les informations à la source, puis importer Contacts et Entreprises ensemble.</p>
+<ul class="reveal"><li>Une structure (entreprise) par ligne, son interlocuteur décisionnaire renseigné quand il est connu — président, direction générale, responsable concerné.</li><li>Une adresse e-mail vérifiée plutôt que supposée ; à défaut, l'adresse générique de la structure, jamais une adresse reconstituée au hasard.</li><li>Le « Type de diffuseurs » et le « Type de contact » renseignés dès l'import, pour que la segmentation soit immédiatement opérante.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>La qualité prime sur le volume : une fiche au décideur identifié et à l'e-mail vérifié vaut mieux que dix fiches génériques. Sur l'édition Starter, le nettoyage d'une base polluée coûte cher en temps — la rigueur à l'entrée évite ce coût.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Limites de l'édition Starter</h3>
+      <p class="reveal">Trois contraintes à connaître, car elles orientent les méthodes de travail.</p>
+<div class="table-wrap reveal"><table><tr><th>Limite</th><th>Conséquence pratique</th></tr><tr><td>Pas de fusion de doublons en masse</td><td>Fusion manuelle, ou prévention en amont par des imports propres</td></tr><tr><td>Suppression plafonnée à 50 lignes par page</td><td>Prévoir du temps pour tout nettoyage de volume</td></tr><tr><td>Abonnement marketing non modifiable en masse</td><td>Le statut « Abonné » se fixe à l'import, via la colonne dédiée</td></tr></table></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="marketing">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 6</span>
+         <h2>Marketing &amp; e-mailing</h2>
+       </header>
+    <p class="reveal">Ce chapitre rassemble tout le parcours d'une communication de masse, du ciblage à la lecture des résultats. Il répond à une chaîne précise, dont chaque maillon manquant fait échouer un envoi en silence : <strong>cibler</strong> les bons contacts (le segment), s'assurer qu'ils sont <strong>adressables</strong> (contact marketing + abonnement), <strong>créer et envoyer</strong> l'e-mail, puis <strong>lire</strong> les résultats.</p>
+
+    <div class="block reveal">
+      <h3 class="block-title">Le segment : cibler avant d'envoyer</h3>
+      <p class="reveal">Un segment est un sous-ensemble de contacts isolé selon un ou plusieurs critères — concrètement, une liste. C'est le <em>à qui</em> de toute communication : il ne déclenche aucun envoi, il sélectionne l'audience.</p>
+<p class="reveal">Il existe parce que la base mêle des milliers d'utilisateurs finaux de l'application et une part de décideurs B2B (OT, EPCI, entreprises). Envoyer le même message à tous serait un contresens — solliciter un joueur comme on sollicite un office de tourisme. Au-delà de la pertinence, c'est un enjeu de délivrabilité : les envois mal ciblés génèrent des désabonnements et des plaintes qui dégradent durablement la réputation de l'expéditeur, donc la capacité des prochains e-mails à atteindre la boîte de réception.</p>
+<p class="label reveal">Deux natures de listes</p>
+<div class="table-wrap reveal"><table><tr><th>Type</th><th>Comportement</th><th>Usage type</th></tr><tr><td>Liste statique</td><td>Figée à l'instant de sa création</td><td>Photographier une cible précise — les destinataires d'un envoi daté</td></tr><tr><td>Liste active</td><td>Mise à jour automatique selon ses critères</td><td>Maintenir un segment vivant — tous les contacts EPCI d'un département</td></tr></table></div>
+<p class="label reveal">Construire un segment</p>
+<ol class="reveal"><li>CRM → Contacts → Listes → « Créer une liste ».</li><li>Choisir l'objet (Contacts) et le type — active (évolutive) ou statique (figée).</li><li>Définir les critères : par exemple « Type de contact = OT », que l'on combine à « Entreprise → Code postal commence par 74 » pour cibler les OT de Haute-Savoie.</li><li>Enregistrer : la liste devient réutilisable pour tous les envois suivants.</li></ol>
+<div class="note reveal"><span class="note-ico">i</span><span>Quand un critère porte sur l'adresse, filtrer au niveau de l'<strong>Entreprise</strong> (« Entreprise → Code postal ») est plus fiable qu'au niveau du Contact, où l'adresse est souvent absente. La propriété « Type de contact » reste, elle, le filtre de premier réflexe (voir Partie 2).</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Le contact marketing : qui peut recevoir un envoi</h3>
+      <p class="reveal">Être dans le bon segment ne suffit pas : encore faut-il que le contact soit <em>adressable</em>. Deux notions distinctes le déterminent, et les confondre fait échouer des envois sans message d'erreur visible.</p>
+<ul class="reveal"><li><strong>Le statut de contact marketing</strong> — seuls les contacts marqués « marketing » sont éligibles aux e-mails marketing. Les autres restent dans le CRM, consultables et joignables individuellement, mais hors de portée des envois de masse.</li><li><strong>L'abonnement aux communications</strong> — c'est le consentement. Un contact peut être joignable en e-mail individuel (abonnement « One to One ») sans avoir consenti aux communications marketing (« Marketing Information »). Sans ce consentement précis, il est automatiquement exclu des envois marketing : c'est une exigence légale, pas un réglage contournable.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>C'est exactement la cause du blocage rencontré sur la campagne 365 jours : des contacts par ailleurs corrects, mais abonnés en « One to One » et non en « Marketing Information ». Le réflexe de diagnostic quand un contact « ne reçoit rien » : vérifier d'abord son type d'abonnement.</span></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Le statut de contact marketing conditionne l'éligibilité aux envois ; sur les offres incluant le Marketing Hub, c'est aussi lui qui détermine le quota facturé. Selon l'abonnement réel d'Alpvengers, cet angle « coût » peut ne pas s'appliquer — à vérifier dans Paramètres → Contacts marketing.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Rendre un contact adressable, manuellement</h3>
+      <p class="reveal">L'abonnement et le statut marketing se posent idéalement dès l'import, via une colonne dédiée (voir Partie 5). Mais il faut souvent corriger un contact à la main — voici les deux gestes, à ne surtout pas confondre.</p>
+<p class="label reveal">1 · L'abonner à « Marketing Information » (le consentement)</p>
+<ol class="reveal"><li>Ouvrir la fiche du contact : CRM → Contacts → cliquer son nom.</li><li>En haut de la fiche, menu « Actions » → « Afficher les abonnements » (ou « Voir les abonnements »).</li><li>Repérer le type « Marketing Information » et le définir sur « Abonné », en indiquant la base légale appropriée (le consentement).</li><li>Enregistrer : le contact devient un destinataire éligible des envois marketing.</li></ol>
+<p class="label reveal">2 · Le marquer comme « contact marketing » (l'éligibilité)</p>
+<ol class="reveal"><li>Ouvrir une vue ou une liste de contacts (CRM → Contacts, ou une liste enregistrée).</li><li>Cocher le ou les contacts concernés.</li><li>Dans la barre d'actions qui apparaît, cliquer « Plus » → « Définir comme contact marketing ».</li></ol>
+<div class="note reveal"><span class="note-ico">i</span><span>Différence clé sur l'édition Starter : le <strong>statut marketing</strong> peut se régler en masse (sélection dans une liste, geste 2), mais l'<strong>abonnement</strong> ne se modifie pas en masse — soit fiche par fiche comme au geste 1, soit, pour un volume, par un réimport avec une colonne « Abonnement marketing = Abonné ». Pour beaucoup de contacts d'un coup, l'import reste la voie la plus rapide.</span></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Les libellés exacts (« Afficher les abonnements », « Marketing Information ») peuvent varier légèrement selon la configuration du compte ; la logique, elle, ne change pas.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Créer et envoyer un e-mail marketing</h3>
+      <p class="reveal">Un e-mail marketing est l'envoi de masse, par opposition à l'e-mail individuel envoyé depuis une fiche. Le parcours, depuis Marketing → E-mail → « Créer un e-mail » :</p>
+<ol class="reveal"><li><strong>Édition</strong> — choisir le modèle, puis rédiger l'objet et le texte d'aperçu (déterminants pour le taux d'ouverture), renseigner l'expéditeur et le corps du message.</li><li><strong>Destinataires</strong> — sélectionner la liste-segment cible ; ajouter au besoin une ou plusieurs listes à exclure.</li><li><strong>Paramètres</strong> — vérifier l'adresse d'envoi et le pied de page (mentions et lien de désabonnement, obligatoires).</li><li><strong>Vérifier et envoyer</strong> — HubSpot signale les anomalies éventuelles ; toujours s'envoyer un e-mail de test à soi-même d'abord.</li><li>Envoyer immédiatement, ou programmer l'envoi à une date choisie.</li></ol>
+<div class="note reveal"><span class="note-ico">i</span><span>Les garde-fous sont automatiques : un contact non marketing, non abonné ou désabonné est exclu de l'envoi, sans intervention possible. Si le nombre de destinataires réels est plus faible qu'attendu, c'est presque toujours là qu'il faut regarder — pas dans le segment, mais dans les deux blocs précédents.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Lire les résultats d'un envoi</h3>
+      <p class="reveal">Depuis Marketing → E-mail, ouvrir l'e-mail envoyé puis son onglet « Performances ». On y lit le nombre d'e-mails envoyés et délivrés, le taux d'ouverture, le taux de clic, les désabonnements et les e-mails rejetés.</p>
+<p class="reveal">En prospection froide B2B, un taux d'ouverture de 15 à 20 % et un taux de clic de 1 à 3 % constituent des repères de référence ; un premier envoi se situe souvent dans la fourchette basse, ce qui reste cohérent.</p>
+<p class="reveal">L'exploitation passe ensuite par trois listes actives — ouvreurs, cliqueurs, non-ouvreurs — qui permettent de concentrer les relances sur les contacts les plus engagés plutôt que de re-solliciter tout le monde indistinctement.</p>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="pratiques">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 7</span>
+         <h2>Bonnes pratiques</h2>
+       </header>
+    <p class="reveal">Les sections précédentes décrivent l'outil tel qu'il est configuré chez Alpvengers. Celle-ci rassemble des réflexes de praticien — au-delà de ce qui a été mis en place — pour tirer le meilleur de HubSpot sur la durée. C'est ce qui sépare un CRM resté fiable au bout de trois ans d'une base qui se dégrade en quelques mois.</p>
+
+    <div class="block reveal">
+      <h3 class="block-title">L'hygiène des données se prévient, elle ne se rattrape pas</h3>
+      <p class="reveal">Un CRM ne vaut que par la confiance qu'on accorde à ses données, et cette confiance se gagne à la saisie — bien plus qu'au nettoyage, toujours coûteux et tardif.</p>
+<ul class="reveal"><li>Normaliser dès l'entrée : une casse cohérente pour les noms, un format unique pour les téléphones, et des listes déroulantes partout où les valeurs sont connues d'avance. Le texte libre dérive toujours — « OT », « Office de tourisme » et « O.T. » finissent par cohabiter comme trois valeurs distinctes.</li><li>Auditer à intervalle régulier (un passage trimestriel suffit) : contacts sans propriétaire, e-mails en échec définitif à écarter, transactions sans activité depuis longtemps, doublons naissants.</li><li>Ne jamais supprimer un contact porteur d'un historique : un statut « inactif » ou un retrait du marketing préserve la mémoire des échanges, qu'une suppression effacerait pour de bon.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>« Garbage in, garbage out » résume tout : une donnée fausse n'est pas neutre, elle induit activement en erreur. Mieux vaut un champ vide qu'un champ faux.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">La discipline du pipeline fait la fiabilité des prévisions</h3>
+      <p class="reveal">Un pipeline n'est fiable que si chaque étape a une définition partagée — un critère clair pour y entrer et pour en sortir. Sans cela, deux personnes tagueront la même situation différemment, et toute projection perd son sens.</p>
+<ul class="reveal"><li>Une transaction représente une décision d'achat, jamais un simple contact ou une entreprise. Un même compte peut en porter plusieurs en parallèle (voir Partie 3).</li><li>Sur chaque transaction ouverte, toujours une prochaine action datée — une tâche, une date de relance. Une opportunité sans étape suivante est une opportunité qui s'éteint en silence.</li><li>Nettoyer le pipeline périodiquement : une transaction figée depuis des semaines appelle une décision franche — relancer, ou passer en « Fermé perdu » avec son motif. Un pipeline gonflé d'opportunités fantômes ment sur les prévisions.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Les motifs de perte ne servent pas qu'à archiver : agrégés, ils disent pourquoi on perd — prix, calendrier, concurrence — et orientent l'offre. C'est l'une des données les plus précieuses que produit le CRM.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Les outils qui font gagner du temps chaque jour</h3>
+      <p class="reveal">Une grande part de la valeur de HubSpot tient à des fonctions discrètes qui, mises bout à bout, évitent des heures de ressaisie.</p>
+<ul class="reveal"><li>Connecter sa messagerie (Gmail ou Outlook) : les e-mails s'enregistrent automatiquement sur la fiche du contact, on est notifié des ouvertures, et l'historique cesse de dépendre de la mémoire de chacun.</li><li>Se constituer une bibliothèque de modèles et de fragments réutilisables pour les messages récurrents : on personnalise l'essentiel sans réécrire le reste.</li><li>Partager un lien de prise de rendez-vous : le prospect choisit lui-même un créneau libre de l'agenda, ce qui supprime les allers-retours d'e-mails.</li><li>Structurer sa journée par des tâches datées : ce qui n'est pas une tâche planifiée a tendance à ne pas se faire.</li></ul>
+<p class="label reveal">Réflexes de navigation</p>
+<ul class="reveal"><li>La recherche globale pour sauter directement à une fiche, sans naviguer dans les menus.</li><li>Les vues enregistrées par objet : chacun garde ses filtres de travail sous la main (« mes transactions du mois », « mes OT à relancer »).</li><li>L'édition en masse depuis une liste : sélectionner plusieurs fiches et modifier une propriété en une fois.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>L'import ne sert pas qu'à créer : réimporter un fichier muni d'une clé stable (le Record ID) met à jour en masse les fiches existantes. C'est souvent le moyen le plus rapide de corriger une propriété sur des centaines de lignes d'un coup.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Mesurer peu, mais toujours les mêmes choses</h3>
+      <p class="reveal">La valeur d'un indicateur vient de sa constance dans le temps, pas de sa sophistication. Trois chiffres suivis chaque mois valent mieux que vingt relevés une seule fois.</p>
+<ul class="reveal"><li>Quelques repères qui tiennent dans la durée : le CA signé et le CA pondéré, le taux de conversion d'une étape à la suivante (pour voir où ça coince), la vélocité — le temps moyen pour signer — et la source des leads, qui dit quel canal rapporte réellement.</li><li>D'où l'intérêt de renseigner une propriété de source dès l'entrée d'un contact : sans elle, la question « d'où viennent nos clients ? » reste sans réponse.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Le reporting fin relevant des éditions supérieures, un réflexe simple sur Starter : figer un instantané des chiffres clés chaque mois, pour pouvoir comparer dans le temps plutôt que de constater seulement à l'instant présent.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Faire grandir l'outil en même temps que l'équipe</h3>
+      <p class="reveal">Un CRM tenu par une personne et un CRM partagé par une équipe n'obéissent pas aux mêmes règles. Quelques principes gardent la base lisible à mesure qu'elle grossit.</p>
+<ul class="reveal"><li>Attribuer un propriétaire à chaque contact et transaction dès qu'on est plusieurs : la responsabilité devient lisible, et « tout le monde s'en occupe » ne se mue pas en « personne ne s'en occupe ».</li><li>Adopter des conventions de nommage partagées pour les transactions, les listes et les propriétés. Un simple préfixe sur les listes (« [ACTIVE] », « [ENVOI] ») suffit à garder une base claire.</li><li>Documenter les propriétés via leur champ description : leur sens doit survivre au départ de celui qui les a créées.</li><li>Centraliser la création de propriétés sur une personne référente : rien ne pollue plus vite une base que dix propriétés qui désignent la même chose.</li></ul>
+<div class="note reveal"><span class="note-ico">i</span><span>Ce guide fait partie de cette gouvernance. Le tenir à jour à chaque évolution de la configuration et le faire lire à tout nouvel arrivant vaut mieux qu'une longue formation : la connaissance reste dans l'équipe, et non dans une seule tête.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Savoir quand passer à la vitesse supérieure</h3>
+      <p class="reveal">L'édition Starter est taillée pour une structure qui démarre ; elle devient limitante à des signaux précis. Les reconnaître évite à la fois de sur-payer trop tôt et de s'entêter trop tard.</p>
+<div class="table-wrap reveal"><table><tr><th>Signal</th><th>Ce que débloque une édition supérieure</th></tr><tr><td>Des relances manuelles, répétitives et chronophages</td><td>Workflows et séquences automatisés</td></tr><tr><td>Le besoin de rapports croisés et de tableaux de bord fins</td><td>Reporting personnalisé</td></tr><tr><td>Une hiérarchisation des prospects faite à la main</td><td>Scoring automatique des contacts</td></tr><tr><td>Plusieurs équipes aux droits à différencier</td><td>Permissions et gestion d'équipes</td></tr><tr><td>Un suivi des e-mails qui bute sur ses quotas</td><td>Quotas étendus</td></tr></table></div>
+<div class="note reveal"><span class="note-ico">i</span><span>Côté coût, surveiller le nombre de contacts marketing : eux seuls entrent dans le quota facturé. Repasser en « non marketing » les contacts dormants évite de payer pour une base qu'on ne sollicite plus.</span></div>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Protéger la mémoire commerciale de l'entreprise</h3>
+      <p class="reveal">Le CRM est la mémoire commerciale d'Alpvengers : sa perte ou sa corruption coûte bien plus cher qu'un incident technique ordinaire.</p>
+<ul class="reveal"><li>Exporter régulièrement une sauvegarde des contacts, entreprises et transactions : un export mensuel archivé met la base à l'abri d'une fausse manipulation.</li><li>Activer la double authentification sur les comptes : un CRM renferme des données personnelles et mérite la même protection qu'une boîte mail.</li><li>Tenir une trace propre du consentement — qui a accepté quoi, et quand — et ne jamais contourner les désabonnements, que l'outil gère automatiquement.</li><li>Ne jamais laisser la maîtrise de l'outil reposer sur une seule personne : documentation à jour, accès partagés, second administrateur identifié.</li></ul>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="lexique">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 8</span>
+         <h2>Lexique</h2>
+       </header>
+    <div class="table-wrap reveal"><table><tr><th>Terme</th><th>Définition</th></tr><tr><td>Objet</td><td>Catégorie de données structurée dans HubSpot. Trois objets ici : Contacts, Entreprises, Transactions.</td></tr><tr><td>Propriété</td><td>Champ d'information rattaché à un objet, par exemple « Secteur d'activité » ou « Type de contact ».</td></tr><tr><td>Filtre</td><td>Restriction temporaire de l'affichage d'une liste selon un ou plusieurs critères, sans modification des données ni effet durable.</td></tr><tr><td>Pipeline</td><td>Suite ordonnée d'étapes que parcourt une transaction, du premier contact à la signature ou à l'abandon.</td></tr><tr><td>Transaction</td><td>Opportunité commerciale, en cours ou conclue — une expérience vendue à un diffuseur.</td></tr><tr><td>Diffuseur</td><td>Client B2B (OT, EPCI, entreprise, sponsor) qui propose l'expérience Alpvengers à ses usagers.</td></tr><tr><td>Liste statique</td><td>Ensemble de contacts figé à sa création, qui n'évolue plus.</td></tr><tr><td>Liste active</td><td>Ensemble de contacts mis à jour automatiquement selon des critères définis.</td></tr><tr><td>CA pondéré</td><td>Somme des transactions actives multipliées par la probabilité de leur étape.</td></tr><tr><td>Workflow</td><td>Automatisation conditionnelle (« si… alors… ») — disponibilité étendue en édition Pro.</td></tr><tr><td>Sales Hub Starter</td><td>Édition d'entrée de gamme de HubSpot : pipeline, propriétés et emailing inclus ; automatisations avancées et fusion de masse réservées aux éditions supérieures.</td></tr><tr><td>Propriétaire (owner)</td><td>Membre de l'équipe responsable d'un contact, d'une entreprise ou d'une transaction — rend la responsabilité lisible dès que plusieurs personnes utilisent l'outil.</td></tr><tr><td>Séquence</td><td>Suite d'e-mails et de tâches de relance automatisés dans le temps — fonction des éditions Sales supérieures.</td></tr></table></div>
+    
+  </section>
+
+  <section class="panel" data-panel="perspectives">
+    <header class="panel-head reveal">
+         <span class="panel-kicker">Partie 9</span>
+         <h2>Perspectives</h2>
+       </header>
+    
+    
+    <div class="block reveal">
+      <h3 class="block-title">Automatisations à envisager</h3>
+      <p class="reveal">Plusieurs leviers prolongeraient l'outil actuel ; la plupart supposent une montée vers une édition Pro.</p>
+<ul class="reveal"><li>Alerte de renouvellement déclenchée à l'approche de la fin d'une expérience, pour sécuriser la reconduction.</li><li>Proposition d'upsell automatisée — suggérer un nouveau format quelques mois après un premier achat.</li><li>Reporting financier connecté au pipeline, pour une projection de trésorerie fondée sur le CA pondéré.</li><li>Tableau de bord commercial : conversion par étape, transactions en stagnation, vélocité du pipeline.</li></ul>
+    </div>
+
+    <div class="block reveal">
+      <h3 class="block-title">Faire vivre ce document</h3>
+      <p class="reveal">Ce guide reflète une configuration à un instant donné. Toute nouvelle propriété, tout nouveau process ou automatisation mérite d'y être consigné : c'est la condition pour que la connaissance de l'outil reste partagée plutôt que dépendante d'une seule personne.</p>
+    </div>
+  </section></main>
+</div>
+
+<script>
+  const items = Array.from(document.querySelectorAll('.nav-item'));
+  const panels = Array.from(document.querySelectorAll('.panel'));
+  const progress = document.getElementById('progress');
+  const mainEl = document.querySelector('main');
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold:.14, rootMargin:'0px 0px -8% 0px' });
+
+  function observePanel(panel){
+    panel.querySelectorAll('.reveal:not(.in), .schema:not(.in)').forEach(el=>io.observe(el));
+  }
+
+  function activate(id){
+    items.forEach(x=>x.classList.toggle('active', x.dataset.tab===id));
+    panels.forEach(p=>{
+      const on = p.dataset.panel===id;
+      p.classList.toggle('active', on);
+      if(on){
+        p.querySelectorAll('.reveal, .schema').forEach(el=>el.classList.remove('in'));
+        requestAnimationFrame(()=>observePanel(p));
+      }
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  items.forEach(it=>it.addEventListener('click', ()=>activate(it.dataset.tab)));
+  observePanel(document.querySelector('.panel.active'));
+
+  // scroll progress
+  function updateProgress(){
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = h>0 ? (window.scrollY/h*100)+'%' : '0%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+</script>
+
+</body>
+</html>
